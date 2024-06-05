@@ -1,6 +1,11 @@
 import 'package:hive/hive.dart';
 import 'package:spacexview/screens/data.g.dart';
 
+
+
+////data set architucture 
+
+
 @HiveType(typeId: 0)
 class Data extends HiveObject {
   @HiveField(0)
