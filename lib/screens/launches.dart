@@ -5,14 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:spacexview/screens/archi.dart';
 import 'dart:convert';
 
-
-
-
-
-
-
-
-
 class launches extends StatefulWidget {
   @override
   _launches createState() => _launches();
