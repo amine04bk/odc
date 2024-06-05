@@ -10,6 +10,8 @@ class launches extends StatefulWidget {
   _launches createState() => _launches();
 }
 
+var request = http.Request('GET', Uri.parse('https://api.spacexdata.com/v4/launches'));
+
 class _launches extends State<launches> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -24,17 +26,14 @@ class _launches extends State<launches> {
   Data? dataFromAPI;
   _getData() async {
     ///// wait for the api  response to fetch data in the model data.dart 
-    try {
-      String url = "https://api.spacexdata.com/v4/launches";
-      http.Response res = await http.get(Uri.parse(url));
-      if (res.statusCode == 200) {
-        dataFromAPI = Data.fromJson(json.decode(res.body));
-        _isLoading = false;
-        setState(() {});
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-    }
+    http.StreamedResponse response = await request.send();
+
+if (response.statusCode == 200) {
+  print(await response.stream.bytesToString());
+}
+else {
+  print(response.reasonPhrase);
+}
   }
 
   @override
