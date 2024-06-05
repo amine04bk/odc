@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -47,13 +48,13 @@ class _HomePageState extends State<HomePage> {
                  SizedBox(height: 210.0),
 
                 Container(
-                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(35, 0, 30, 0),
-                        child:   Row(
+                       child: Column(
                           children: [
-                            Column(
+                            Row(
                               children: [
-                        GestureDetector(
+                                Padding(
+                        padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
+                        child:   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
@@ -65,11 +66,12 @@ class _HomePageState extends State<HomePage> {
                     width: MediaQuery.of(context).size.width * 0.4,
                 ),
                   ),
-                      ],
-                            ),
-                           Column(
-                              children: [
-                        GestureDetector(
+                                     
+                     
+                      ),
+                        Padding(
+                        padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
+                        child: GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
@@ -81,13 +83,18 @@ class _HomePageState extends State<HomePage> {
                     width: MediaQuery.of(context).size.width * 0.4,
                 ),
                   ),
-                      ],
-                            ),
-                         
-                          ],
-                        ),
+                      
+                        
                      
                       ),
+                                     ],
+                            ),
+                          ],
+                        ),
+                       
+                       
+                       
+                       
                
                 ),
                 
