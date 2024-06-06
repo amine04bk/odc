@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spacexview/screens/HomeScreen.dart';
 
-
-
-
-
 void main() {
   runApp(MaterialApp(
     home: LoadingScreen(),
@@ -69,7 +65,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
                   width: 220,
                   height: 150,
                 ),
-                
               ],
             ),
           ),

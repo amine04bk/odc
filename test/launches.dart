@@ -1,138 +1,91 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
-import 'package:spacexview/screens/archi.dart';
+import 'package:spacexview/screens/model.dart';
 import 'dart:convert';
 
-class launches extends StatefulWidget {
+class Launches extends StatefulWidget {
   @override
-  _launches createState() => _launches();
+  _LaunchesState createState() => _LaunchesState();
 }
 
-var request = http.Request('GET', Uri.parse('https://api.spacexdata.com/v4/launches'));
-
-class _launches extends State<launches> {
+class _LaunchesState extends State<Launches> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   bool _isLoading = true;
- 
+  List<Data>? launches;
+
   @override
   void initState() {
     super.initState();
     _getData();
   }
- 
-  Data? dataFromAPI;
-  _getData() async {
-    ///// wait for the api  response to fetch data in the model data.dart 
-    http.StreamedResponse response = await request.send();
 
-if (response.statusCode == 200) {
-  print(await response.stream.bytesToString());
-}
-else {
-  print(response.reasonPhrase);
-}
+  _getData() async {
+    http.Response response = await http.get(Uri.parse("https://api.spacexdata.com/v3/launches"));
+
+    if (response.statusCode == 200) {
+      print(response.body);
+      setState(() {
+        launches = dataFromJson(response.body);
+        _isLoading = false;
+      });
+    } else {
+      print(response.reasonPhrase);
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //// not work api not response ********
+      key: _scaffoldKey,
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(),
             )
           : ListView.builder(
-              scrollDirection: Axis.vertical,
+              itemCount: launches?.length ?? 0,
               itemBuilder: (context, index) {
+                final launch = launches![index];
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Image.network(
-                        dataFromAPI!.links.patch.small,
-                        width: 100,
+                      launch.links?.patch?.small != null
+                          ? Image.network(
+                              launch.links!.patch!.small!,
+                              width: 100,
+                            )
+                          : Container(),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            launch.name ?? "N/A",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            launch.dateUtc != null ? launch.dateUtc!.toIso8601String() : "N/A",
+                            style: TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
                       ),
-                    ]
+                    ],
                   ),
                 );
               },
-              itemCount: dataFromAPI!.id.length,
             ),
     );
   }
-}
-///fonction to show container contain the data from api
-///
-Widget laun(String path, String name, String date, String description) {
-  return Container(
-    decoration: BoxDecoration(
-      color: const Color(0xFF5D6290),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    width: 600,
-
-    child: Stack(
-      children: [
-
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment:
-                    CrossAxisAlignment.start, // Align text to the left
-                children: [
-                  Image.asset(
-                    path,
-                    width: (140),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    name,
-                    style: TextStyle(color: Colors.white, fontSize: 9),
-                  ),
-                  SizedBox(height: 3),
-                  Text(
-                    date,
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        Positioned(
-          bottom: 35,
-          right: 0,
-          child: Container(
-            alignment: Alignment.center,
-            width: 80,
-            height: 30,
-            decoration: BoxDecoration(
-              color: Color.fromARGB(255, 104, 35, 35),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              name,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 9,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
 }
