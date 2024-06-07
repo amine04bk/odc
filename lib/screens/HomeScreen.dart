@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => missions()),
+                                    builder: (context) => MissionsList()),
                               );
                             },
                             child: Image.asset(
@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => Launch()),
+                                    builder: (context) => LaunchList()),
                               );
                             },
                             child: Image.asset(
