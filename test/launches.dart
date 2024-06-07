@@ -1,91 +1,156 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:spacexview/screens/LaunchDetail.dart';
 import 'package:spacexview/screens/model.dart';
-import 'dart:convert';
 
-class Launches extends StatefulWidget {
+class LaunchList extends StatefulWidget {
   @override
-  _LaunchesState createState() => _LaunchesState();
+  _LaunchListState createState() => _LaunchListState();
 }
 
-class _LaunchesState extends State<Launches> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _isLoading = true;
-  List<Data>? launches;
+class _LaunchListState extends State<LaunchList> {
+  late Future<List<Launch>> futureLaunches;
+  List<Launch> launches = [];
+  bool isSortedAscending = true;
 
   @override
   void initState() {
     super.initState();
-    _getData();
-  }
-
-  _getData() async {
-    http.Response response = await http.get(Uri.parse("https://api.spacexdata.com/v3/launches"));
-
-    if (response.statusCode == 200) {
-      print(response.body);
-      setState(() {
-        launches = dataFromJson(response.body);
-        _isLoading = false;
-      });
-    } else {
-      print(response.reasonPhrase);
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    futureLaunches = fetchLaunches();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : ListView.builder(
-              itemCount: launches?.length ?? 0,
-              itemBuilder: (context, index) {
-                final launch = launches![index];
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      launch.links?.patch?.small != null
-                          ? Image.network(
-                              launch.links!.patch!.small!,
-                              width: 100,
-                            )
-                          : Container(),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            launch.name ?? "N/A",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            launch.dateUtc != null ? launch.dateUtc!.toIso8601String() : "N/A",
-                            style: TextStyle(
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+      appBar: AppBar(
+        title: Text('SpaceX Launches', style: TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(
+            icon: Icon(isSortedAscending ? Icons.arrow_downward : Icons.arrow_upward),
+            onPressed: sortLaunches,
+            color: Colors.white,
+          )
+        ],
+        backgroundColor: Colors.black,
+      ),
+      body: Center(
+        child: FutureBuilder<List<Launch>>(
+              future: futureLaunches,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text("${snapshot.error}");
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Text("No launches found", style: TextStyle(color: Colors.white));
+                } else {
+                  launches = snapshot.data!;
+                  return Stack(
+                      children: [
+                      Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage('https://img1.bjd.com.cn/2023/11/18/d648f9cd2daf58586694efc459aa2ffb57d9dd35.jpeg'),
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                );
+                ),
+                Opacity(
+                  opacity: 0.4,
+                  child: Container(
+                    color: Colors.black,
+                  ),
+                ),
+                ListView.builder(
+                    itemCount: launches.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                          leading: launches[index].missionPatch.isNotEmpty
+                              ? FutureBuilder<File>(
+                                  future: DefaultCacheManager().getSingleFile(launches[index].missionPatch),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.done &&
+                                        snapshot.hasData &&
+                                        snapshot.data != null) {
+                                      return Image.file(snapshot.data!);
+                                    } else {
+                                      return Icon(Icons.image_not_supported);
+                                    }
+                                  },
+                                )
+                              : Icon(Icons.image_not_supported),
+                          title: Text(
+                            launches[index].missionName,
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+                          subtitle: Text(
+                            'Launch Year: ${launches[index].launchYear}',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onTap: () => _navigateToDetails(context, launches[index]),
+                        );
+                      
+                    },
+                  )
+                
+
+
+                      ],
+                  );
+                  }
               },
             ),
+          
+      ));
+  }
+
+  void sortLaunches() {
+    setState(() {
+      if (isSortedAscending) {
+        launches.sort((a, b) => a.launchDate.compareTo(b.launchDate));
+      } else {
+        launches.sort((a, b) => b.launchDate.compareTo(a.launchDate));
+      }
+      isSortedAscending = !isSortedAscending;
+    });
+  }
+
+  void _navigateToDetails(BuildContext context, Launch launch) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LaunchDetail(launch: launch),
+      ),
     );
+  }
+}
+
+Future<List<Launch>> fetchLaunches() async {
+  var cacheManager = DefaultCacheManager();
+  FileInfo? cachedFile = await cacheManager.getFileFromCache('launches_data');
+
+  if (cachedFile != null) {
+    // Use cached data if available
+    var launchesData = json.decode(await cachedFile.file.readAsString());
+    return List<Launch>.from(launchesData.map((x) => Launch.fromJson(x)));
+  } else {
+    // Fetch data from API and cache it
+    final response = await http.get(Uri.parse('https://api.spacexdata.com/v3/launches'));
+
+    if (response.statusCode == 200) {
+      List jsonResponse = json.decode(response.body);
+      var launches = jsonResponse.map((launch) => Launch.fromJson(launch)).toList();
+
+      // Cache launch data
+      cacheManager.putFile('https://api.spacexdata.com/v3/launches', response.bodyBytes, key: 'launches_data');
+
+      return launches;
+    } else {
+      throw Exception('Failed to load launches');
+    }
   }
 }
