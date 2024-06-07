@@ -83,10 +83,9 @@ class _MissionsListState extends State<MissionsList> {
     );
   }
 }
-
 Future<List<Mission>> fetchMissions() async {
   var cacheManager = DefaultCacheManager();
-  FileInfo? cachedFile = await cacheManager.getFileFromCache('missions_data');
+  FileInfo? cachedFile = await cacheManager.getFileFromCache('https://api.spacexdata.com/v3/missions');
 
   if (cachedFile != null) {
     // Use cached data if available
@@ -101,7 +100,7 @@ Future<List<Mission>> fetchMissions() async {
       var missions = jsonResponse.map((mission) => Mission.fromJson(mission)).toList();
 
       // Cache mission data
-      cacheManager.putFile('https://api.spacexdata.com/v3/missions', response.bodyBytes, key: 'missions_data');
+      cacheManager.putFile('https://api.spacexdata.com/v3/missions', response.bodyBytes, key: 'https://api.spacexdata.com/v3/missions');
 
       return missions;
     } else {

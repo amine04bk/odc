@@ -12,13 +12,13 @@ class MissionDetails extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           mission.missionName,
-          style: TextStyle(color: Colors.white), // Text color
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.black, // App bar background color
+        backgroundColor: Colors.black, 
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: Colors.white, // Arrow color
+            color: Colors.white, 
           ),
           onPressed: () {
             Navigator.pop(context);
@@ -29,7 +29,7 @@ class MissionDetails extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Image.network(
-            'https://img1.bjd.com.cn/2023/11/18/d648f9cd2daf58586694efc459aa2ffb57d9dd35.jpeg', // Background image URL
+            'https://img1.bjd.com.cn/2023/11/18/d648f9cd2daf58586694efc459aa2ffb57d9dd35.jpeg', // Replace with valid image URL
             fit: BoxFit.cover,
           ),
           Container(
@@ -41,7 +41,7 @@ class MissionDetails extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                   Text(
                     'Mission ID:',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
@@ -91,16 +91,20 @@ class MissionDetails extends StatelessWidget {
                     style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                   SizedBox(height: 16.0),
-                  if (mission.twitter != null)
-                    Text(
-                      'Twitter:',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  SizedBox(height: 8.0),
-                  if (mission.twitter != null)
-                    Text(
-                      mission.twitter!,
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                  if (mission.twitter != null && mission.twitter!.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Twitter:',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        SizedBox(height: 8.0),
+                        Text(
+                          mission.twitter!,
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                      ],
                     ),
                   SizedBox(height: 16.0),
                   Text(
@@ -112,7 +116,8 @@ class MissionDetails extends StatelessWidget {
                     mission.description,
                     style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
-                ],
+                
+                 ],
               ),
             ),
           ),
