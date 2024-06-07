@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -42,28 +41,27 @@ class _LaunchListState extends State<LaunchList> {
       body: Column(
         children: [
           Padding(
-  padding: const EdgeInsets.all(0),
-  child: Container(
-    color: Colors.black,
-    child: TextField(
-      controller: searchController,
-      onChanged: filterLaunches,
-      style: TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        hintText: 'Search by mission name',
-        hintStyle: TextStyle(color: Colors.white),
-        prefixIcon: Icon(Icons.search, color: Colors.white),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
-        ),
-      ),
-    ),
-  ),
-),
-
+            padding: const EdgeInsets.all(0),
+            child: Container(
+              color: Colors.black,
+              child: TextField(
+                controller: searchController,
+                onChanged: filterLaunches,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Search by mission name',
+                  hintStyle: TextStyle(color: Colors.white),
+                  prefixIcon: Icon(Icons.search, color: Colors.white),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: FutureBuilder<List<Launch>>(
               future: futureLaunches,
@@ -71,64 +69,78 @@ class _LaunchListState extends State<LaunchList> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return Text("${snapshot.error}");
+                  return Center(
+                    child: Container(
+                      color: Colors.black,
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        "Failed to get data",
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                    ),
+                  );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Text("No launches found", style: TextStyle(color: Colors.white));
+                  return Center(
+                    child: Container(
+                      color: Colors.black,
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        "No launches found",
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                    ),
+                  );
                 } else {
                   launches = snapshot.data!;
                   return Stack(
-                      children: [
+                    children: [
                       Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage('https://img1.bjd.com.cn/2023/11/18/d648f9cd2daf58586694efc459aa2ffb57d9dd35.jpeg'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Opacity(
-                  opacity: 0.4,
-                  child: Container(
-                    color: Colors.black,
-                  ),
-                ),
-                ListView.builder(
-                    itemCount: launches.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                          leading: launches[index].missionPatch.isNotEmpty
-                              ? FutureBuilder<File>(
-                                  future: DefaultCacheManager().getSingleFile(launches[index].missionPatch),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.done &&
-                                        snapshot.hasData &&
-                                        snapshot.data != null) {
-                                      return Image.file(snapshot.data!);
-                                    } else {
-                                      return Icon(Icons.image_not_supported);
-                                    }
-                                  },
-                                )
-                              : Icon(Icons.image_not_supported),
-                          title: Text(
-                            launches[index].missionName,
-                            style: TextStyle(color: Colors.white, fontSize: 20),
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: NetworkImage('https://img1.bjd.com.cn/2023/11/18/d648f9cd2daf58586694efc459aa2ffb57d9dd35.jpeg'),
+                            fit: BoxFit.cover,
                           ),
-                          subtitle: Text(
-                            'Launch Year: ${launches[index].launchYear}',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          onTap: () => _navigateToDetails(context, launches[index]),
-                        );
-                      
-                    },
-                  )
-                
-
-
-                      ],
+                        ),
+                      ),
+                      Opacity(
+                        opacity: 0.4,
+                        child: Container(
+                          color: Colors.black,
+                        ),
+                      ),
+                      ListView.builder(
+                        itemCount: launches.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            leading: launches[index].missionPatch.isNotEmpty
+                                ? FutureBuilder<File>(
+                                    future: DefaultCacheManager().getSingleFile(launches[index].missionPatch),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState == ConnectionState.done &&
+                                          snapshot.hasData &&
+                                          snapshot.data != null) {
+                                        return Image.file(snapshot.data!);
+                                      } else {
+                                        return Icon(Icons.image_not_supported);
+                                      }
+                                    },
+                                  )
+                                : Icon(Icons.image_not_supported),
+                            title: Text(
+                              launches[index].missionName,
+                              style: TextStyle(color: Colors.white, fontSize: 20),
+                            ),
+                            subtitle: Text(
+                              'Launch Year: ${launches[index].launchYear}',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            onTap: () => _navigateToDetails(context, launches[index]),
+                          );
+                        },
+                      ),
+                    ],
                   );
-                  }
+                }
               },
             ),
           ),

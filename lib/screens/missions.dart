@@ -23,7 +23,7 @@ class _MissionsListState extends State<MissionsList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Missions List', style: TextStyle(color: Colors.white)), 
+        title: Text('Missions List', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -33,9 +33,27 @@ class _MissionsListState extends State<MissionsList> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text("${snapshot.error}"));
+            return Center(
+              child: Container(
+                color: Colors.black,
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "Failed to get data",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ),
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("No missions found"));
+            return Center(
+              child: Container(
+                color: Colors.black,
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "No missions found",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ),
+            );
           } else {
             List<Mission> missions = snapshot.data!;
             return Stack(
@@ -83,6 +101,7 @@ class _MissionsListState extends State<MissionsList> {
     );
   }
 }
+
 Future<List<Mission>> fetchMissions() async {
   var cacheManager = DefaultCacheManager();
   FileInfo? cachedFile = await cacheManager.getFileFromCache('https://api.spacexdata.com/v3/missions');
